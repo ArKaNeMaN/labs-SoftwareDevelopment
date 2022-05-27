@@ -49,32 +49,21 @@ def read_matrix(file, sep=' '):
 
 
 def write_matrix_as_csv(file, mat):
-    h_file = open(file, 'w')
-    if not h_file.writable():
-        return 0
-
-    for row in mat:
-        for i in range(len(row)):
-            row[i] = str(row[i])
-        h_file.write(';'.join(row) + '\n')
-
-    h_file.close()
-    return 1
+    with open(file, 'w') as h_file: [h_file.write(';'.join([str(cell) for cell in row]) + '\n')for row in mat]
 
 
 def parse_csv_line(line):
     return line.split(';')
 
 
-def read_csv(file, with_header=1):
-    h_file = open(file, 'r')
+def file_foreach_line(filename, callback, withComments=0):
+    h_file = open(filename, 'r')
     if not h_file.readable():
         return []
 
-    header = []
-    rows = []
-    while 1:
-        line = read_line(h_file, 0)
+    ret = []
+    while True:
+        line = read_line(h_file, withComments)
 
         if line is None:
             break
@@ -82,21 +71,14 @@ def read_csv(file, with_header=1):
         if line == '':
             continue
 
-        cells = parse_csv_line(line)
-        if with_header:
-            if len(header) < 1:
-                header = cells
-            else:
-                row = {}
-                for i in range(len(header)):
-                    row[header[i]] = cells[i]
-                rows.append(row)
-        else:
-            rows.append(cells)
+        ret.append(callback(line))
 
     h_file.close()
+    return ret
 
-    return rows
+
+def read_csv(file, with_header=1):
+    return file_foreach_line(file, parse_csv_line)
 
 
 def read_graph_as_list_to_matrix(file):

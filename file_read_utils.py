@@ -23,6 +23,7 @@ def read_csv(file):
 def write_matrix_as_csv(file, mat):
     with open(file, 'w') as h_file:
         [h_file.write(';'.join([str(cell) for cell in row]) + '\n') for row in mat]
+    return 0
 
 
 def read_matrix(file):

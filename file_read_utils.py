@@ -1,4 +1,6 @@
 import itertools
+import time
+from ctypes import *
 
 
 def line_is_comment(line):
@@ -44,21 +46,52 @@ def read_int_list(file):
     return merge_lists(read_matrix(file))
 
 
+def read_int_list_c(file):
+    dll = cdll.LoadLibrary("liblab_SoftwareDevelopment_dll.dll")
+
+    print("\n")
+    dll.hello()
+    print(dll.sum(2, 5))
+
+    dll.read_int_list.restype = c_int64
+    dll.read_int_list.argtypes = [c_char_p]
+
+    res = dll.read_int_list(file.encode('utf-8'))
+
+    size = c_int64.from_address(res).value
+    print('size = ', size)
+    res += 8
+
+    lst = []
+    for i in range(size):
+        lst.append(c_int64.from_address(res + (8 * i)).value)
+
+    return lst
+
+
 if __name__ == '__main__':
-    write_matrix_as_csv("./tests/mat.csv", read_matrix('./tests/mat.txt'))
+    st_time = time.perf_counter()
+    read_int_list_c('tests/big-test.txt')
+    print('С++:', time.perf_counter() - st_time)
 
-    print("Matrix:")
-    print(read_matrix('./tests/mat.txt'))
-    print("")
+    st_time = time.perf_counter()
+    read_int_list('tests/big-test.txt')
+    print('Python:', time.perf_counter() - st_time)
 
-    print("Matrix (from csv):")
-    print(read_csv("./tests/mat.csv"))
-    print("")
-
-    print("Some data from CSV:")
-    print(read_csv("./tests/test.csv"))
-    print("")
-
-    print("Matrix (int list):")
-    print(read_int_list("./tests/mat.txt"))
-    print("")
+    # write_matrix_as_csv("./tests/mat.csv", read_matrix('./tests/mat.txt'))
+    #
+    # print("Matrix:")
+    # print(read_matrix('./tests/mat.txt'))
+    # print("")
+    #
+    # print("Matrix (from csv):")
+    # print(read_csv("./tests/mat.csv"))
+    # print("")
+    #
+    # print("Some data from CSV:")
+    # print(read_csv("./tests/test.csv"))
+    # print("")
+    #
+    # print("Matrix (int list):")
+    # print(read_int_list("./tests/mat.txt"))
+    # print("")
